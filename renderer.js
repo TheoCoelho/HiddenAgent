@@ -137,6 +137,7 @@ function definirOcupado(valor) {
   enviar.classList.toggle('parar', valor);
   provedor.disabled = valor;
   modelo.disabled = valor;
+  $('capturar').disabled = valor;
   for (const chip of document.querySelectorAll('.chip')) chip.disabled = valor;
 }
 
@@ -157,17 +158,18 @@ function adicionarAcoes(balao, texto) {
   balao.append(acoes);
 }
 
-function perguntar(texto, { forcarNotas = false } = {}) {
+function perguntar(texto, { forcarNotas = false, captureScreen = false } = {}) {
   const conteudo = texto.trim();
   if (!conteudo || ocupado) return;
 
   ultimaPergunta = conteudo;
-  novaMensagem('user', conteudo);
+  novaMensagem('user', captureScreen ? `${conteudo}\n[Print da tela enviado como contexto]` : conteudo);
   balaoAtual = novaMensagem('ai pensando', '');
   respostaAtual = '';
   definirOcupado(true);
 
   window.api.ask({
+    captureScreen,
     messages: [...historico, { role: 'user', content: conteudo }],
     includeNotes: forcarNotas || $('usar-notas').checked,
     notes: notas.value,
@@ -237,6 +239,7 @@ for (const chip of document.querySelectorAll('.chip')) {
 }
 
 $('limpar').addEventListener('click', () => {
+  window.api.clearContext();
   if (ocupado) {
     window.api.abort();
     balaoAtual = null; // o evento de conclusão que chegar depois é descartado
@@ -248,3 +251,14 @@ $('limpar').addEventListener('click', () => {
 });
 
 atualizarChave(); // já preenche o seletor de provedor
+
+function perguntarComPrint() {
+  if (ocupado) return;
+  abrirAba('assistente');
+  const texto = pergunta.value.trim() || 'Analise a tela capturada e me ajude com o conteúdo que está sendo exibido.';
+  pergunta.value = '';
+  perguntar(texto, { captureScreen: true });
+}
+
+$('capturar').addEventListener('click', perguntarComPrint);
+window.api.onCaptureRequest(perguntarComPrint);

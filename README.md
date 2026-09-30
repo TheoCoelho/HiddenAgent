@@ -140,6 +140,7 @@ A escolha de provedor e modelo é lembrada entre execuções. O uso das APIs é 
 | Ação | Como |
 | --- | --- |
 | Mostrar/ocultar a janela | **Ctrl+Alt+H** |
+| Capturar a tela e enviar à IA | **Ctrl+Alt+P** ou botão **Print + IA** |
 | Mover a janela | Arrastar a barra de título |
 | Redimensionar | Arrastar as bordas (mínimo de 240 × 180) |
 | Alternar proteção contra captura | Clicar na etiqueta verde/vermelha |
@@ -150,6 +151,15 @@ A escolha de provedor e modelo é lembrada entre execuções. O uso das APIs é 
 | Interromper uma resposta | Botão **Parar** |
 
 ## Onde ficam os dados e o que sai do computador
+
+**Print como contexto:** com o app aberto, pressione **Ctrl+Alt+P**, mesmo em outro programa.
+O monitor onde está o mouse é capturado e enviado ao provedor selecionado, junto com a pergunta
+digitada no assistente (ou um pedido automático de análise quando o campo está vazio).
+O último print acompanha as perguntas seguintes até clicar em **Limpar**, capturar outro print ou fechar o app.
+A imagem fica apenas na memória, sem arquivo local, em JPEG com lado maior de até 2560 pixels.
+A captura respeita o estado da proteção da janela. Durante uma resposta, aguarde ou clique em **Parar**
+antes de capturar novamente. Modelos personalizados precisam aceitar imagens.
+Se o atalho estiver ocupado por outro aplicativo, use o botão **Print + IA**.
 
 **Armazenamento local** (pasta de dados do Electron, `%APPDATA%\bloco-notas-privado`):
 
@@ -164,6 +174,7 @@ A escolha de provedor e modelo é lembrada entre execuções. O uso das APIs é 
 **O que é enviado pela rede:** somente quando você faz uma pergunta no assistente. Vão para o provedor
 selecionado (Anthropic ou OpenAI): o histórico recente da conversa (até 20 mensagens), a sua pergunta e, se
 **Usar notas como contexto** estiver marcado (ou ao usar Resumir, Itens de ação e Ideias), o texto das notas.
+Ao usar **Print + IA**, a captura também é enviada e permanece como contexto conforme descrito acima.
 Não há telemetria, análise de uso nem nenhum outro servidor envolvido. Desmarque a opção de contexto se as
 notas tiverem algo que você não quer enviar.
 

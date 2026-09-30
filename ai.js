@@ -155,14 +155,27 @@ function describeProviders(chosenModels = {}) {
   }));
 }
 
-async function streamAnswer({ provider = 'anthropic', model, apiKey, messages, notes, signal, onText }) {
+function withScreenshot(messages, screenshot, provider) {
+  if (!screenshot) return messages;
+  return messages.map((message, index) => index !== messages.length - 1 ? message : {
+    role: message.role,
+    content: [
+      { type: 'text', text: message.content },
+      provider === 'anthropic'
+        ? { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: screenshot } }
+        : { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${screenshot}` } },
+    ],
+  });
+}
+
+async function streamAnswer({ provider = 'anthropic', model, apiKey, messages, notes, screenshot, signal, onText }) {
   if (!isProvider(provider)) throw new Error(`Provedor desconhecido: ${provider}`);
   const p = PROVIDERS[provider];
   await p.stream({
     apiKey,
     model: resolveModel(provider, model),
     system: buildSystem(notes),
-    messages,
+    messages: withScreenshot(messages, screenshot, provider),
     maxTokens: p.maxTokens,
     signal,
     onText,
@@ -187,6 +200,7 @@ function friendlyError(err, provider = 'anthropic') {
 }
 
 module.exports = {
+  withScreenshot,
   streamAnswer, prepareMessages, buildSystem, friendlyError, describeProviders,
   isProvider, isModel, resolveModel, PROVIDERS,
 };

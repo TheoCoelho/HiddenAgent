@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, globalShortcut, ipcMain, safeStorage, screen } = require('electron');
+const { app, BrowserWindow, Menu, globalShortcut, ipcMain, safeStorage, screen, desktopCapturer, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const ai = require('./ai');
@@ -8,6 +8,23 @@ const ai = require('./ai');
 app.setPath('userData', path.join(app.getPath('appData'), 'bloco-notas-privado'));
 
 const SHORTCUT = 'CommandOrControl+Alt+H';
+const CAPTURE_SHORTCUT = 'CommandOrControl+Alt+P';
+let screenContext = null;
+let contextVersion = 0;
+
+async function captureScreen() {
+  const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  const width = Math.round(display.size.width * display.scaleFactor);
+  const height = Math.round(display.size.height * display.scaleFactor);
+  const scale = Math.min(1, 2560 / Math.max(width, height));
+  const sources = await desktopCapturer.getSources({
+    types: ['screen'],
+    thumbnailSize: { width: Math.round(width * scale), height: Math.round(height * scale) },
+  });
+  const source = sources.find((item) => item.display_id === String(display.id));
+  if (!source || source.thumbnail.isEmpty()) throw new Error('Não foi possível capturar o monitor atual.');
+  return source.thumbnail.toJPEG(85).toString('base64');
+}
 const DEFAULTS = { text: '', opacity: 0.92, provider: 'anthropic', models: {}, bounds: { width: 380, height: 460 } };
 
 let win = null;
@@ -182,7 +199,12 @@ ipcMain.handle('ai:clear-key', (_e, provider) => {
 
 ipcMain.on('ai:ask', async (event, payload) => {
   if (event.sender !== win?.webContents) return;
-  const send = (channel, data) => { if (win && !win.isDestroyed()) win.webContents.send(channel, data); };
+  const send = (channel, data) => {
+    if (win && !win.isDestroyed()) {
+      if (payload?.captureScreen && channel === 'ai:error') { win.show(); win.restore(); }
+      win.webContents.send(channel, data);
+    }
+  };
 
   if (currentAsk) return send('ai:error', 'Aguarde a resposta atual terminar.');
   const messages = ai.prepareMessages(payload?.messages);
@@ -193,12 +215,24 @@ ipcMain.on('ai:ask', async (event, payload) => {
 
   const controller = new AbortController();
   currentAsk = controller;
+  const version = contextVersion;
   try {
+    if (payload.captureScreen) {
+      const image = await captureScreen();
+      if (controller.signal.aborted || version !== contextVersion) {
+        send('ai:done', { aborted: true });
+        return;
+      }
+      screenContext = image;
+      win?.show();
+      win?.restore();
+    }
     await ai.streamAnswer({
       provider,
       model: readStore().models?.[provider],
       apiKey,
       messages,
+      screenshot: screenContext,
       notes: payload.includeNotes ? String(payload.notes ?? '') : '',
       signal: controller.signal,
       onText: (text) => send('ai:chunk', text),
@@ -214,6 +248,7 @@ ipcMain.on('ai:ask', async (event, payload) => {
 });
 
 ipcMain.on('ai:abort', () => currentAsk?.abort());
+ipcMain.on('ai:clear-context', () => { screenContext = null; contextVersion++; });
 
 // Sem ícone na barra não há como restaurar uma janela minimizada, então "minimizar" oculta (Ctrl+Alt+H traz de volta).
 ipcMain.on('window:minimize', () => win?.hide());
@@ -235,6 +270,11 @@ if (!app.requestSingleInstanceLock()) {
     Menu.setApplicationMenu(null);
     createWindow();
     globalShortcut.register(SHORTCUT, toggleVisibility);
+    if (!globalShortcut.register(CAPTURE_SHORTCUT, () => {
+      if (win && !currentAsk) win.webContents.send('ai:capture-request');
+    })) {
+      dialog.showMessageBox(win, { type: 'warning', message: 'Ctrl+Alt+P está indisponível. Use o botão Print + IA no assistente.' });
+    }
   });
 
   app.on('will-quit', () => globalShortcut.unregisterAll());

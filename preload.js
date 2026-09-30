@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('api', {
   clearKey: (provider) => ipcRenderer.invoke('ai:clear-key', provider),
   ask: (payload) => ipcRenderer.send('ai:ask', payload),
   abort: () => ipcRenderer.send('ai:abort'),
+  clearContext: () => ipcRenderer.send('ai:clear-context'),
+  onCaptureRequest: (callback) => ipcRenderer.on('ai:capture-request', () => callback()),
   onAi: ({ chunk, done, error }) => {
     ipcRenderer.on('ai:chunk', (_e, text) => chunk(text));
     ipcRenderer.on('ai:done', (_e, info) => done(info));
