@@ -138,7 +138,6 @@ function definirOcupado(valor) {
   provedor.disabled = valor;
   modelo.disabled = valor;
   $('capturar').disabled = valor;
-  for (const chip of document.querySelectorAll('.chip')) chip.disabled = valor;
 }
 
 function adicionarAcoes(balao, texto) {
@@ -233,10 +232,6 @@ pergunta.addEventListener('keydown', (e) => {
     $('form').requestSubmit();
   }
 });
-
-for (const chip of document.querySelectorAll('.chip')) {
-  chip.addEventListener('click', () => perguntar(chip.dataset.prompt, { forcarNotas: true }));
-}
 
 $('limpar').addEventListener('click', () => {
   window.api.clearContext();

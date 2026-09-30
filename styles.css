@@ -151,18 +151,6 @@ body {
   padding: 0 10px 6px;
 }
 
-.chip {
-  padding: 3px 10px;
-  border: 1px solid #3a3c41;
-  border-radius: 12px;
-  background: transparent;
-  color: #b5b7bd;
-  font-size: 11px;
-  cursor: pointer;
-}
-.chip:hover:not(:disabled) { border-color: #7c8cff; color: #fff; }
-.chip:disabled { opacity: 0.4; cursor: default; }
-
 .entrada {
   display: flex;
   gap: 6px;

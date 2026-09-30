@@ -8,10 +8,10 @@
 </head>
 <body>
   <header class="titlebar">
-    <button id="protecao" class="badge" title="Alterna a proteção contra captura de tela"></button>
-    <input id="opacidade" type="range" min="0.3" max="1" step="0.05" title="Opacidade">
-    <button id="minimizar" class="win-btn" title="Minimizar">&#8211;</button>
-    <button id="fechar" class="win-btn close" title="Fechar">&#10005;</button>
+    <button id="protecao" class="badge" aria-label="Alterna a proteção contra captura de tela"></button>
+    <input id="opacidade" type="range" min="0.3" max="1" step="0.05" aria-label="Opacidade">
+    <button id="minimizar" class="win-btn" aria-label="Minimizar">&#8211;</button>
+    <button id="fechar" class="win-btn close" aria-label="Fechar">&#10005;</button>
   </header>
 
   <nav class="tabs">
@@ -37,10 +37,7 @@
     <div id="chat" class="chat"></div>
 
     <div class="chips">
-      <button id="capturar" class="botao" title="Ctrl+Alt+P: captura o monitor do mouse e envia à IA. O último print permanece como contexto até Limpar.">Print + IA</button>
-      <button class="chip" data-prompt="Resuma as minhas notas em poucos tópicos.">Resumir</button>
-      <button class="chip" data-prompt="Liste os itens de ação (com responsável e prazo, se houver) que aparecem nas minhas notas.">Itens de ação</button>
-      <button class="chip" data-prompt="Sugira 5 ideias ou próximos passos com base nas minhas notas.">Ideias</button>
+      <button id="capturar" class="botao">Print + IA</button>
     </div>
 
     <form id="form" class="entrada">
@@ -49,12 +46,12 @@
     </form>
 
     <div class="seletores">
-      <select id="provedor" title="Provedor de IA"></select>
-      <select id="modelo" title="Modelo"></select>
+      <select id="provedor" aria-label="Provedor de IA"></select>
+      <select id="modelo" aria-label="Modelo"></select>
     </div>
 
     <div class="rodape-chat">
-      <label title="As notas são enviadas ao provedor de IA selecionado junto com a pergunta">
+      <label>
         <input id="usar-notas" type="checkbox" checked> Usar notas como contexto
       </label>
       <span class="espaco"></span>
